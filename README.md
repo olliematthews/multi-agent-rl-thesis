@@ -11,3 +11,8 @@ Each directory holds different stages of the code. The environment is either sin
 * The Actor Critic algorithm
 * The Actor Critic with a non-stationary U-function (cross between a V and Q function)
 * The Actor Critic with a mechanism for automatically tuning hyperparameters according to a "coach"
+
+### Requirements
+* Tensorflow < 2
+* Keras (code written for version 2.3.1)
+* Code written for Cuda 10.1
