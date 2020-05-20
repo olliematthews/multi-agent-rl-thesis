@@ -5,7 +5,7 @@
 The environment is meant to simulate cyclists in a race. The aim is to travel as far as possible. In a multi-agent case, this requires collaborative policies where the agents cycle close together.
 
 ## Notes
-Each directory holds different stages of the code. The environment is either single or multi agent, and different algorithms are implemented including:
+Each directory holds different stages of the code. The environment is either single, multi agent and different algorithms are implemented to each. The algorithms are:
 
 * REINFORCE
 * The Actor Critic algorithm
