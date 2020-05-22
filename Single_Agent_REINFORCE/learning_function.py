@@ -1,3 +1,7 @@
+'''
+Runs the reinforce algorithm. 
+'''
+
 import numpy as np
 import matplotlib.pyplot as plt
 from environment import Cyclist
@@ -6,7 +10,7 @@ import pickle
 
 # Simulation Parameters
 sim_params = {
-    'n_episodes' : 4000y,
+    'n_episodes' : 4000,
     'n_seeds' : 10,
     'print_rewards' : True
     }
@@ -46,6 +50,8 @@ env_params = {
         'race_length' : 400,
         'time_limit' : 200
         }
+
+
 
 # Our policy that maps state to action parameterized by w
 def policy(state,w):
@@ -208,4 +214,5 @@ for iterator in range(n_iterations):
 
 params = {'Env': env_params, 'Hyp' : hyper_params, 'Sim' : sim_params}
 
+# Save results in a pickle file
 pickle.dump([w_best, Seed_rewards, Seed_entropies, Seed_mean_velocities, params], open('Optimal_PG.p','wb'))

@@ -1,8 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Created on Sun Oct 13 15:21:42 2019
-
-@author: Ollie
+Will generate an animation of a race.
 """
 
 #from learning_function import policy

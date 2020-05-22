@@ -1,18 +1,23 @@
-# -*- coding: utf-8 -*-
 """
-Created on Tue Dec  3 11:52:27 2019
-
-@author: Ollie
+This code will retrieve pickle files from a remote directory. The remote 
+directory is at 'remote_path/' + <your current directory name>.
 """
 
 import paramiko
 import os
 
+# Set your username, the host name, your password, and the path to the 
+# remote directory which contains the directory with the pickle files.
+hostname = ''
+username = ''
+password = ''
+remote_path = ''
+
 # Connect to remote host
 client = paramiko.client.SSHClient()
 client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-client.connect('', username='', password='')
-remote_path = '' + os.path.basename(os.getcwd())
+client.connect(hostname, username=username, password=password)
+remote_path = remote_path + os.path.basename(os.getcwd())
 
 # Import any p files
 sftp = client.open_sftp()
