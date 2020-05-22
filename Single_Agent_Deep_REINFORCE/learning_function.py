@@ -1,8 +1,14 @@
+'''
+Implements REINFORCE with a deep agent policy.
+'''
+
 import numpy as np
 from environment import Cyclist
 import pickle
 from agent import Agent
 import matplotlib.pyplot as plt
+
+
 # Simulation Parameters
 NUM_EPISODES = 4000
 n_seeds = 10
@@ -26,9 +32,6 @@ def normalise_state(state, env_params):
 # Hyperparameters
 LEARNING_RATE = [1e-2]
 GAMMA = 0.99
-epsilon = 0.98
-epsilon_final = 0.01
-epsilon_decay = (epsilon / epsilon_final) ** (-10000/NUM_EPISODES)
 alpha_mean = 0.1
 alpha_std = 0.1
 iterator_rewards = [None] * len(LEARNING_RATE)
@@ -41,7 +44,7 @@ for i in range(len(LEARNING_RATE)):
     seed_rewards = [None] * n_seeds
 
     for seed in range(n_seeds):
-        # Create gym and seed numpy
+        # Create the environment and seed numpy
         cyclist = Cyclist(env_params)
         nA = cyclist.action_space
         nx = cyclist.state_space + 1
@@ -93,4 +96,6 @@ for i in range(len(LEARNING_RATE)):
         seed_entropies[seed] = episode_entropies
         seed_velocities[seed] = episode_velocities
     iterator_rewards[i] = seed_rewards.copy()
+    
+# Save the final results
 pickle.dump([iterator_rewards, seed_entropies, seed_velocities] , open('Boop_moop_sloop.p','wb'))

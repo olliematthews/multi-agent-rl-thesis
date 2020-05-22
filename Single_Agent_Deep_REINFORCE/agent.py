@@ -1,7 +1,8 @@
 """
-Created on Sun Nov  3 16:43:48 2019
-
-@author: Ollie
+Contains the 'agent' class that implements a policy based on a neural network,
+and learns using REINFORCE.
+Code based on the code described here:
+    https://www.youtube.com/watch?v=IS0V8z8HXrM
 """
 
 from keras.layers import Dense, Activation, Input
@@ -12,6 +13,7 @@ import keras.backend as K
 import tensorflow as tf
 import numpy as np
 
+# Set a limit to how much GPU memory keras uses ------------------------------
 gpus = tf.config.experimental.list_physical_devices('GPU')
 if gpus:
   # Restrict TensorFlow to only allocate 1GB of memory on the first GPU
@@ -26,10 +28,45 @@ if gpus:
     print(e)
 
 
+
 class Agent(object):
     def __init__(self, lr, env_params, alpha_mean = 0.1, alpha_std = 0.05, 
                  GAMMA=0.99, n_actions=3, layer1_size=5, layer2_size=5, 
-                 input_dims=5, epsilon_0 = 0.98, epsilon_decay = 0.996, batch_size = 1, seed = 0):
+                 input_dims=5, batch_size = 1, seed = 0):
+        '''
+        Initialiser
+
+        Parameters
+        ----------
+        lr : float
+            Learning rate.
+        env_params : dict
+            Environment parameters.
+        alpha_mean : float, optional
+            The momentum parameter for the baseline. The default is 0.1.
+        alpha_std : float, optional
+            The momentum parameter for the rolling standard deviation. The 
+            default is 0.05.
+        GAMMA : float, optional
+            Discount rate. The default is 0.99.
+        n_actions : int, optional
+            The size of the action space. The default is 3.
+        layer1_size : int, optional
+            Size of the first hidden layer. The default is 5.
+        layer2_size : int, optional
+            Size of the second hidden layer. The default is 5.
+        input_dims : int, optional
+            Input layer size (state space size). The default is 5.
+        batch_size : int, optional
+            The batch size for policy updates. The default is 1.
+        seed : int, optional
+            Random seed. The default is 0.
+
+        Returns
+        -------
+        None.
+
+        '''
         self.alpha_mean = alpha_mean
         self.alpha_std = alpha_std
         self.gamma = GAMMA
@@ -45,9 +82,6 @@ class Agent(object):
         self.rolling_average_reward = np.zeros(env_params['time_limit'] * batch_size)
         self.rolling_std_dev = 1
         self.episode = 0
-        self.epsilon_0 = epsilon_0
-        self.epsilon_decay = epsilon_decay
-        self.epsilon = 0
         self.batch_size = batch_size
         self.seed = seed
         self.advantages = np.empty([0,])
@@ -57,6 +91,17 @@ class Agent(object):
         self.policy, self.predict = self.build_policy_network()
 
     def build_policy_network(self):
+        '''
+        Build the two layer neural network.
+
+        Returns
+        -------
+        policy : keras Model
+            This is the model which should be used for learning.
+        predict : keras Model
+            This is the model which should be used for policy predictions.
+
+        '''
         input = Input(shape=(self.input_dims,))
         advantages = Input(shape=[1])
         
@@ -79,9 +124,34 @@ class Agent(object):
         return policy, predict
 
     def print_weights(self):
+        '''
+        Function will print the weights for the first layer, for debugging 
+        purposes.
+
+        Returns
+        -------
+        None.
+
+        '''
         print(self.policy.layers[1].get_weights())
 
     def choose_action(self, observation):
+        '''
+        Choose an action based on a state observation.
+
+        Parameters
+        ----------
+        observation : np.array
+            An observation of the state.
+
+        Returns
+        -------
+        action : int
+            Action.
+        entropy : float
+            Entropy.
+
+        '''
         state = observation[np.newaxis, :]
         probs = self.predict.predict(state)[0]
         entropy = self.get_entropy(probs)
@@ -90,14 +160,55 @@ class Agent(object):
         return action, entropy
     
     def get_entropy(self, probs):
+        '''
+        Calculates Shannon entropy.
+
+        Parameters
+        ----------
+        probs : np.array
+            The output probabilities from the policy.
+
+        Returns
+        -------
+        entropy : float
+            The entropy of the probabilities.
+
+        '''
         return - np.sum(probs * np.log(probs + 1e-4)) 
 
     def store_transition(self, observation, action, reward):
+        '''
+        Store the transition.
+
+        Parameters
+        ----------
+        observation : np.array
+            State observation.
+        action : int
+            Action.
+        reward : float
+            The reward from the action taken.
+
+        Returns
+        -------
+        None.
+
+        '''
+        
         self.state_memory.append(observation)
         self.action_memory.append(action)
         self.reward_memory.append(reward)
 
     def learn(self):
+        '''
+        Update the policy based on the stored state, action, reward tuples.
+
+        Returns
+        -------
+        None.
+
+        '''
+        
         state_memory = np.array(self.state_memory)
         action_memory = np.array(self.action_memory)
         reward_memory = np.array(self.reward_memory)
@@ -114,13 +225,10 @@ class Agent(object):
         if self.episode % self.batch_size == self.batch_size - 1:
             actions = np.zeros([self.actions.shape[0], self.n_actions])
             actions[np.arange(self.actions.shape[0]), self.actions.astype(int)] = 1
-            # self.print_weights()
             cost = self.policy.train_on_batch([self.states, self.advantages], actions)
-            # self.print_weights()
             self.advantages = np.empty([0,])
             self.states = np.empty([0,self.input_dims])
             self.actions = np.empty([0,])
-#            self.epsilon *= self.epsilon_decay ** self.batch_size
 
         self.state_memory = []
         self.action_memory = []
