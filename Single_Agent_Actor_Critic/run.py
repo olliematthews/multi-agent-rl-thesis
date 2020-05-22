@@ -1,3 +1,7 @@
+'''
+Runs learning.
+'''
+
 import numpy as np
 import matplotlib.pyplot as plt
 from environment import Cyclist
@@ -55,8 +59,6 @@ env_params = {
 
 # Initialisations
 n_iterations = len(hyper_params['TD_batch'])
-# n_iterations = len(hyper_params['p_order'])
-# n_iterations = len
 labels = []
 Seed_rewards = np.empty([n_iterations,sim_params['n_seeds'],sim_params['n_episodes']])
 Seed_entropies = np.empty([n_iterations,sim_params['n_seeds'],sim_params['n_episodes']])
@@ -70,8 +72,8 @@ iterator_rewards = []
 iterator_losses = []
 iterator_critics = []
 abss = []
-#plt.figure()
-#ax = plt.gca()
+
+
 for iterator in range(n_iterations):
     # Hyperparameters
     alpha_p_change = 0.001
@@ -85,17 +87,14 @@ for iterator in range(n_iterations):
     epsilon_decay = (epsilon_0 / epsilon_final) ** (-1 / decay_episodes)
     p_order = hyper_params['p_order']
     poly = PolynomialFeatures(p_order)
-#    labels.append('Batch Size of ' + str(batch_size))
+
     seed_rewards = np.empty([sim_params['n_seeds'], sim_params['n_episodes']])
 
     policy_changes = []
     exploration = hyper_params['exploration']
     seed_critics = [None] * sim_params['n_seeds']
     for seed in range(sim_params['n_seeds']):
-    # for seed in range(1):
-    #     seed = 3
-        print(seed)
-        # Create gym and seed numpy
+        # Create enrironment and seed numpy
         cyclist = Cyclist(env_params)
         nA = cyclist.action_space
         nx = cyclist.state_space + 1
@@ -113,10 +112,7 @@ for iterator in range(n_iterations):
         policies = policies[None,:,:]
         delta_w_policy = np.zeros_like(w_policy)
         w_critic = estimate_critic(w_policy, 1, gamma, env_params, seed, poly)
-        # w_critic /= 5
-#        w_critic = np.array([0,0,100.0,-100,0]).reshape(nx,1)
-        # w_size = int(comb(nx + p_order, p_order)) - 1
-        # w_size = 35
+
         w_critic = np.random.normal(0,0.1,w_critic.shape)
         print(w_critic)
         w_critics = copy.copy(w_critic)
@@ -149,9 +145,6 @@ for iterator in range(n_iterations):
             step = 0
             entropy = 0
             mean_velocity = 0
-#            if e == 1500:
-#                learning_rate_critic /= 10
-#                learning_rate_actor /= 10
             while True:
         		# Choose your action
                 prob = np.array(policy(state,w_policy))
@@ -176,8 +169,6 @@ for iterator in range(n_iterations):
                 # Update the state
                 mean_velocity = mean_velocity * (1 - 1 / (1 + step)) + 1 / (1 + step) * state[1]
                 state = np.append(normalise_state(state,env_params),1)
-#                    state = next_state[None,:]
-            
                 
                 # Save the score
                 rewards[batch_step] = reward
@@ -209,8 +200,8 @@ for iterator in range(n_iterations):
                     safe_values = np.delete(values[:-1], loc_exp, axis = 0)
                     safe_states = np.delete(states[:-1], loc_exp, axis = 0)
                     safe_value_labels = np.delete(value_labels, loc_exp, axis = 0)
+                    
                     # Update the critic
-                    # losses.append((np.linalg.norm(values[:-1] - value_labels)) ** 2)
                     loss_norm = (np.linalg.norm(values[:-1] - value_labels)) ** 2
                     w_critic -= learning_rate_critic * critic_grad(safe_values, safe_value_labels, safe_states[:,:-1], poly)
                     # Calculate the advantage
@@ -235,16 +226,12 @@ for iterator in range(n_iterations):
                     break             
                 
             if hyper_params['use_std']:
-                # loc_end = np.where(np.sum(actions[:batch_step,:],axis = 1) == 0)
                 if batch_step > 0:
                     vals = critic(states[:batch_step,:-1],w_critic, poly)
                     ads = rewards[: (batch_step - 1),:] + gamma * vals[1:] - vals[:-1]
-                    # ads = np.append(ads, -vals[-1,None], axis = 0)
-                # ads[loc_end,:] = 0
                     episode_advantages = np.append(episode_advantages, ads)
                     
                 rolling_std = np.sqrt(rolling_std ** 2 * (1 - hyper_params['alpha_std']) + hyper_params['alpha_std'] * (np.mean(episode_advantages ** 2)))
-                # print(rolling_std)
                 episode_advantages = np.zeros([0,1])
 
             # Save the best parameters
@@ -271,13 +258,9 @@ for iterator in range(n_iterations):
     iterator_losses.append(seed_losses)
     iterator_critics.append(seed_critics)
     
-#plt.plot(np.mean(seed_rewards,axis = 0))
 params = {'Env': env_params, 'Hyp' : hyper_params, 'Sim' : sim_params}
 plt.legend()
-#plt.savefig('poopdiscoop')
 plt.show()
-#for iterator in range(n_iterations):
-#    plt.plot(seed_losses[iterator][0], alpha = 0.2)
-#plt.show
 
-# pickle.dump([w_best, iterator_rewards, iterator_losses , iterator_critics, params, policies], open('batches.p','wb'))
+# Save results
+pickle.dump([w_best, iterator_rewards, iterator_losses , iterator_critics, params, policies], open('batches.p','wb'))
