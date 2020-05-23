@@ -1,16 +1,11 @@
-# -*- coding: utf-8 -*-
 """
-Created on Sat Nov 30 10:28:33 2019
-
-@author: Ollie
+Same as 'run', but just runs a single episode with no multi-processing. Used
+for debugging.
 """
 
 import numpy as np
-from multiprocessing import Pool
-import pickle
 from run_seed import run_seed
-import time
-import cProfile
+
 # Simulation Parameters
 sim_params = {
     'n_episodes' : 100,
@@ -78,15 +73,3 @@ if __name__ == '__main__':
     # Flatten list to input it into multiprocessing, then restack it
     flat_params = [item for sublist in seed_params for item in sublist]
     Seed_rewards, Seed_entropies, weights = run_seed(flat_params[0])
-    # pickle.dump([Seed_rewards, Seed_entropies, model_best], open('ExploreYes.p','wb'))
-#     output_stacked = []
-#     for iterator in range(n_iterations):
-#         output_stacked.append([])
-#         for seed in range(sim_params['n_seeds']):
-#             output_stacked[iterator].append(output[sim_params['n_seeds'] * iterator + seed])
-            
-        
-# #    Seed_rewards[seed,:], Seed_entropies[seed,:], Seed_explore[seed,:], model_best[seed] = run_seed(seed, seed_params)
-    
-#     params = {'Env': env_params, 'Hyp' : hyper_params, 'Sim' : sim_params}
-#     pickle.dump([output_stacked,labels,params], open('Exploring.p','wb'))

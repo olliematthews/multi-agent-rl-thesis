@@ -1,8 +1,5 @@
-# -*- coding: utf-8 -*-
 """
-Created on Sun Oct 20 17:14:28 2019
-
-@author: Ollie
+Functions for plotting the results of simulations.
 """
 import matplotlib.pyplot as plt
 import pickle
@@ -12,22 +9,23 @@ from matplotlib import gridspec
 
 
 def parse_data(results):
+    '''
+    Parse the results file.
+    '''
     rewards = []
     entropies = []
     model_best = []
     for i in range(len(results)):
         rewards.append(results[i][0])
-        # r = []
-        # for j in range(results[i][0][4:].size):
-        #     r.append(results[i][0][4 + j])
-        # rewards.append(np.array(r))
         entropies.append(results[i][1])
-        # model_best.append(results[i][2])
     rewards = np.array(rewards)
         
     return rewards, entropies, model_best
 
 def plot_episode(rewards, sigma):
+    '''
+    Plot the individual agent performances for a simulation.
+    '''
     for i in range(rewards.shape[0]):
         for j in range(rewards[i].shape[1]):
             plt.plot(gaussian_filter(rewards[i,:,j], sigma = sigma))
@@ -37,6 +35,9 @@ def plot_episode(rewards, sigma):
         plt.show()
 
 def plot_episodes(rewards, sigma,save = False, filename = '', title = ''):
+    '''
+    Will plot the individual seeds for a set of simulations.
+    '''
     for i in range(rewards.shape[0]):
         plt.plot(gaussian_filter(np.mean(rewards,axis = 2)[i,:], sigma = sigma), label = f'Seed {i}')
         
@@ -50,6 +51,10 @@ def plot_episodes(rewards, sigma,save = False, filename = '', title = ''):
     plt.show()
 
 def plot_iterations(rewards, labels, sigma, save = False, filename = ''):
+    '''
+    Main plotting function. Will plot average and std rewards for different 
+    iterations.
+    '''
     plt.figure()
     ax = plt.gca()
     for i in range(len(rewards)):
@@ -69,6 +74,9 @@ def plot_iterations(rewards, labels, sigma, save = False, filename = ''):
     
     
 def plot_entropy_rewards(reward,entropy,sigma, save = False, filename = ''):
+    '''
+    Used to plot stacked plots of reward and entropy.
+    '''
     # set height ratios for sublots
     gs = gridspec.GridSpec(2, 1, height_ratios=[1, 1]) 
     # the fisrt subplot
@@ -97,8 +105,6 @@ sigma = 1
 
 
 data, labels, params = pickle.load(open('LR_c.p','rb'))
-#_,_, _, Seed_rewards, _, _, _ =     pickle.load(open('BigTest.p','rb'))
-
 
 
 rewards = []
@@ -108,24 +114,8 @@ model_best = []
 # labels = [None]
 for i in range(len(data)):
     r, e, m = parse_data(data[i])
-    # To deal with error in saving
-    # r = r[:,4:]
-    # e = [a[4:] for a in e]
     rewards.append(r)
     entropies.append(e)
     model_best.append(m)
-    # plot_episode(r, sigma)
-    # plot_episodes(r,sigma)
 
-# for i in range(len(entropies)):
-#     plt.plot(entropies[i][0], label = labels[i])
-# plt.legend()
-# plt.show()
-plot_iterations(rewards, labels, sigma)
-##
-
-#plot_episodes(rewards, sigma)
-#rewards.append(np.squeeze(Seed_rewards[:10] * 4))
-#labels = ['Multiple agents learning the same policy', 'Single agents learning a policy']
-#plot_iterations(rewards,labels,sigma, True, 'Optimal_Comparison.png')
-
+plot_iterations(rewards, labels, sigma]

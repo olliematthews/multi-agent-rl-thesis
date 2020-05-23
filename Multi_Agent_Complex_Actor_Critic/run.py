@@ -1,8 +1,5 @@
-# -*- coding: utf-8 -*-
 """
-Created on Sat Nov 30 10:28:33 2019
-
-@author: Ollie
+Runs learning in a number of independent processes.
 """
 
 import numpy as np
@@ -87,8 +84,6 @@ if __name__ == '__main__':
         for seed in range(sim_params['n_seeds']):
             output_stacked[iterator].append(output[sim_params['n_seeds'] * iterator + seed])
             
-        
-#    Seed_rewards[seed,:], Seed_entropies[seed,:], Seed_explore[seed,:], model_best[seed] = run_seed(seed, seed_params)
     
     params = {'Env': env_params, 'Hyp' : hyper_params, 'Sim' : sim_params}
     pickle.dump([output_stacked,labels,params], open('2_1_optimal.p','wb'))

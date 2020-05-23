@@ -1,14 +1,31 @@
 # -*- coding: utf-8 -*-
 """
-Created on Thu Jan  9 10:02:51 2020
-
-@author: Ollie
+Contains run_seed, the function which runs training for a given random seed.
 """
 import numpy as np
 from environment import Environment
 from learning_functions import get_entropy, softmax_grad, State_normaliser, policy
 
 def run_seed(seed_params):
+    '''
+    This will run a number of episodes of training and return information about
+    the agents' performances.
+
+    Parameters
+    ----------
+    seed_params : dict
+        Contains all the info needed to run a training run.
+
+    Returns
+    -------
+    Seed_rewards : np.array
+        The rewards for each episode in training.
+    Seed_entropies : np.array
+        The entropies for each episode in training.
+    model_best : list
+        The model which scored the highest reward in the episode.
+
+    '''
     # Create gym and seed numpy
     env_params = seed_params['Env']
     sim_params = seed_params['Sim']
@@ -76,7 +93,7 @@ def run_seed(seed_params):
                         break
                         
                     # Compute gradient and save with reward in memory for our weight updates
-                    grad = softmax_grad(probs, action, states[i]['state'], model)
+                    grad = softmax_grad(probs, action, states[i]['state'])
                     step_grads[cyclist_number].append(grad)
                     actions.append(action - 1)
                      
