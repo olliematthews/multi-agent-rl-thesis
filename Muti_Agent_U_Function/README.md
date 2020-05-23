@@ -10,4 +10,8 @@ This is the more simple multi-agent environment.
 
 ## Algorithm
 
-The algorithm is an implementation of the Actor Critic algorithm. We also implement entropy regularisation. Instead of learning a single agent value function, we learn a multi-agent U-Function, which represents: ![equation](https://latex.codecogs.com/gif.latex?U(s,\bar{a})&space;=&space;\mathbb{E}\left[\sum_t&space;r_t&space;\middle|&space;s&space;=&space;s,&space;\bar{a}&space;=&space;\bar{a}\right]), where $\bar{a}$ represents the actions of all of the agents apart from one partiular agent. This deals with non-stationarity in the multi-agent environment.
+The algorithm is an implementation of the Actor Critic algorithm. We also implement entropy regularisation. Instead of learning a single agent value function, we learn a multi-agent U-Function, which represents:
+
+![equation](https://latex.codecogs.com/gif.latex?U(s,\bar{a})&space;=&space;\mathbb{E}\left[\sum_t&space;r_t&space;\middle|&space;s&space;=&space;s,&space;\bar{a}&space;=&space;\bar{a}\right]),
+
+where ![equation](https://latex.codecogs.com/gif.latex?\bar{a}) represents the actions of all of the agents apart from one partiular agent. This deals with non-stationarity in the multi-agent environment.
