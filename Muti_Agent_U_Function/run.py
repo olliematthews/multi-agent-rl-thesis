@@ -50,7 +50,8 @@ hyper_params = {
     'iterate_over' : 'lambda_reward_profile',
     'std_init' : 10,
     'alpha_std' : 0.05,
-    'state_normaliser_alpha' : 0.01
+    'state_normaliser_alpha' : 0.01,
+    'significant_prob' : 0.01
     }
 
 n_processes = 10

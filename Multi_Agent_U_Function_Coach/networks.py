@@ -1,7 +1,5 @@
 """
-Created on Sun Nov  3 16:43:48 2019
-
-@author: Ollie
+Contains the networks which describe each agent.
 """
 import numpy as np
 import keras.backend as K
@@ -20,9 +18,9 @@ from copy import copy
 from time import time
 import random
 
+# Restrict TensorFlow to only allocate 1GB of memory on the first GPU
 gpus = tf.config.experimental.list_physical_devices('GPU')
 if gpus:
-  # Restrict TensorFlow to only allocate 1GB of memory on the first GPU
   try:
     tf.config.experimental.set_virtual_device_configuration(
         gpus[0],
@@ -60,6 +58,20 @@ class State_normaliser:
         self.alpha = hyper_params['state_normaliser_alpha']
 
     def update_normalisation(self):
+        '''
+        This function updates the normalisation paramters at the end of an 
+        episode. This helps to deal with problems occuring from state 
+        distribution drift.
+
+        Returns
+        -------
+        state_dividors : list
+            A list with the old and new state dividors. The old value is needed
+            to adjust the policy and value function.
+        state_subtractors : list
+            A list with the old and new state subtractors.
+
+        '''
         state_stds = np.sqrt(self.state_mean_squareds - self.state_means ** 2)
         # Rounding errors can cause negative sqrts. Set these to 0.
         state_stds[np.isnan(state_stds)] = 0
@@ -72,6 +84,10 @@ class State_normaliser:
         return [old_state_dividor, self.state_dividor], [old_state_subtractor, self.state_subtractor]
         
     def normalise_state(self, state):
+        '''
+        We normalise the state and also add the state to the normaliser's 
+        memory
+        '''
         alpha = 1 / self.count
         self.state_means = (alpha) * state['state'] + (1 - alpha) * self.state_means
         self.state_mean_squareds = (alpha) * state['state'] ** 2 + (1 - alpha) * self.state_mean_squareds
@@ -80,10 +96,9 @@ class State_normaliser:
         return state 
     
     def normalise_batch(self, states):
-        # print('BAHHHH')
-        # print(len(states))
-        # print(self.state_subtractor.shape)
-        # print(self.state_dividor.shape)
+        '''
+        Normalise an entire batch
+        '''
         return (states - self.state_subtractor) / self.state_dividor
         
     
@@ -99,7 +114,7 @@ class State_normaliser:
     def load_model(self, seed):
         self.reset_arrays()
         self.state_subtractor, self.state_dividor= pickle.load(open('normaliser_weights_' + str(seed) + '.p', 'rb'))
-        
+
     
 class Actor:
     def __init__(self, environment, hyper_params, seed):
@@ -108,8 +123,6 @@ class Actor:
         self.nA = len(environment.action_space) 
         self.action_space = environment.action_space
         self.seed = seed
-        # self.p_order = hyper_params['p_order_actor']
-        # self.poly = PolynomialFeatures(self.p_order)
         np.random.seed(seed)
         random.seed(seed)
         self.policy = self.build_policy_network()
@@ -120,17 +133,17 @@ class Actor:
         return w
     
     def predict(self, state):
+        '''
+        Get the probability of taking each action
+        '''
         z = state.dot(self.policy)
         exp = np.exp(z - np.max(z))
         return (exp/np.sum(exp))
-    
-    def predict_batch(self,states):
-        z = states.dot(self.policy)
-        exp = np.exp(z - np.max(z, axis = 1)[:,None])
-        return (exp/np.sum(exp, axis = 1)[:,None])
         
     def choose_action(self, state):
-        # poly_state = self.poly.fit_transform(state.reshape(1,-1))
+        '''
+        Choose you action according to a seeded generator and the policy.
+        '''
         poly_state = np.append(np.array([1]),state)
         probs = self.predict(poly_state)
         entropy = self.get_entropy(probs)
@@ -138,10 +151,17 @@ class Actor:
         return probs, action, entropy
     
     def get_entropy(self, probs):
+        '''
+        Calculate the Shannon entropy of a set of probabilities
+        '''
         return - np.sum(probs * np.log(probs + 1e-4)) 
     
 
     def learn(self, actions, states, advantages, lambda_explore, probs):
+        '''
+        Update the policy. We introdue entropy regularisation, with lambda
+        explore indicating the weight towards exploitation. 
+        '''
         poly_states = np.append(np.ones([states.shape[0],1]),states, axis = 1)
         x = np.identity(probs.shape[1])[None,:,:] - probs[:,None,:]
             # np.ones([probs.shape[1],1,]) @ probs.reshape([1,-1])
@@ -152,7 +172,7 @@ class Actor:
         entropy_grad = - np.einsum('ij,ikl,ik->jl',poly_states, x, log_probs)
             
         self.policy += self.lr * (log_grad + (1 - lambda_explore) * entropy_grad)
-        # return np.linalg.norm(poly_states, axis = 0)
+
     
     def save_model(self, seed, number):
         pickle.dump(self.policy, open('actor_weights_' + str(seed) + '_' + str(number) + '.p', 'wb'))
@@ -184,6 +204,7 @@ class Critic:
         self.distance_penalty = hyper_params['param_inits']['distance_penalty']
         self.counter = 0
         self.episode_counter = 0
+        self.significant_prob = hyper_params['significant_prob']
         np.random.seed(seed)
         self.vars = [hyper_params['std_init'] ** 2, 0]
         self.advantage_hangover_sums = [0] * 2
@@ -204,6 +225,9 @@ class Critic:
         self.model = self.build_policy_network()
         
     def build_policy_network(self):
+        '''
+        Critic network is a neural network of arbitrary length and width.
+        '''
         model = Sequential()
         
         in_dim = self.nx + (self.n_cyclists - 1) * self.nA
@@ -217,10 +241,16 @@ class Critic:
         return model
         
     def predict(self, states):
+        '''
+        Returns estimated value of states
+        '''
         return np.squeeze(self.model.predict(states))
 
         
     def store_dead(self, dead_state, dead_actions, dead_probs, index, actor, episode_counter):
+        '''
+        Store transtions involving dead states.
+        '''
         self.state_memory[self.counter] = dead_state
         actions = dead_actions.pop(index)
         probs = dead_probs.pop(index)
@@ -238,12 +268,17 @@ class Critic:
             self.learn(actor, episode_counter)
         
     def store_transition_1(self, state, entropy):
-        
+        '''
+        Store the first transition after the environment is reset.
+        '''
         self.state_memory[self.counter] = state
         self.entropy_memory[self.counter] = entropy
             
         
     def store_actions(self, actions, probss, index):
+        '''
+        Store the first set of actions.
+        '''
         self.action_memory[self.counter] = actions.pop(index)
         self.prob_memory[self.counter] = probss.pop(index)
         other_actions = actions
@@ -253,7 +288,9 @@ class Critic:
             self.other_probs_memory[i,self.counter,:] = other_probs[i]
 
     def store_transition_loop(self, state, actions, index, entropy, probss, reward, distance, actor, episode_counter):
-        # other_indexes = [i for i in range(self.n_cyclists) if not i == index]
+        '''
+        Store a set of transitions in the main loop.
+        '''
         
         action = actions.pop(index)
         other_actions = actions
@@ -279,10 +316,18 @@ class Critic:
             self.other_probs_memory[i,self.counter,:] = other_probs[i]
         
     def store_final_reward(self, reward, group_distance):
+        '''
+        Used to store a final sparse reward e.g. the group reward.
+        '''
         self.reward_memory[self.counter - 1] += reward
         self.distance_memory[self.counter - 1] += group_distance
     
     def get_stds(self, advantages):
+        '''
+        Calculate the standard deviations for the advantages. This is used to 
+        normalise the reward and entropy advantages so that the lambda parameter
+        can effectively weight them.
+        '''
         stds = []
         new_hang_sums = []
         new_hang_lens = []
@@ -316,6 +361,9 @@ class Critic:
         return stds
         
     def learn(self, actor, episode_counter):
+        '''
+        Updates the critic and actor. 
+        '''
         pickle.dump(self,open('critic.p','wb'))
         # tic = time()
         rewards = self.reward_memory[:self.action_memory.size] - self.distance_penalty * (self.distance_memory[:self.action_memory.size])
@@ -329,11 +377,7 @@ class Critic:
         for i in range(self.n_cyclists - 1):
             action_indexes += self.other_action_memory[i,:-1] * self.nA ** (self.n_cyclists - 2 - i)
         true_indexes = (self.nA ** (self.n_cyclists - 1) * np.arange(self.batch_size) + action_indexes).astype(int)
-        # print(time() - tic)
-        # print(len(state_actions))
-        
-        Qs = self.predict(state_actions)
-        # print(time() - tic)
+
         combined_probs = np.ones([(self.batch_size + 1),self.nA ** (self.n_cyclists - 1)])
         for i in range(self.n_cyclists - 1):
             n_reps = self.nA ** (self.n_cyclists - 2 - i)
@@ -341,7 +385,9 @@ class Critic:
             rep = np.repeat(self.other_probs_memory[i,:,:], n_reps, axis = -1)
             rep = np.tile(rep, (1,n_tiles))
             combined_probs *= rep
-
+        where_significant = np.where(combined_probs.ravel() > self.significant_prob)
+        Qs = np.zeros([state_actions.shape[0],]) 
+        Qs[where_significant] = self.predict(state_actions[where_significant])      
         Vs = np.einsum('ij,ij->i',Qs.reshape([-1,self.nA ** (self.n_cyclists - 1)]), combined_probs)[1:]
         # print(time() - tic)
         Q_labels = rewards + self.gamma * Vs
@@ -351,7 +397,8 @@ class Critic:
 
         self.model.train_on_batch(state_actions[true_indexes,:], Q_labels)
         # print(time() - tic)
-        Qs = self.predict(state_actions)  
+        Qs = np.zeros([state_actions.shape[0],]) 
+        Qs[where_significant] = self.predict(state_actions[where_significant])      
         Vs = np.einsum('ij,ij->i',Qs.reshape([-1,self.nA ** (self.n_cyclists - 1)]), combined_probs)[1:]
 
         reward_advantages = rewards + self.gamma * Vs - Qs[true_indexes]
@@ -370,7 +417,14 @@ class Critic:
         # print(time() - tic)
         
     def learn_off_policy(self, index, arrays, actor):
-        # pickle.dump([index, arrays, actor], open('Dump.p','wb'))
+        '''
+        Off-learning based on a set of tuples fed in. We loop through according
+        to the off-policy batch size, and update the policy using importance 
+        weights.
+        '''
+        # TODO Check this works!!! (Works well in two agent case, more agents
+        # needs checking).
+        
         other_indexes = [i for i in range(self.n_cyclists) if not i == index]
         probs_buffer = arrays[0][index]
         other_probs_buffer = arrays[0][other_indexes]
@@ -407,7 +461,6 @@ class Critic:
             for i in range(self.n_cyclists - 1):
                 action_indexes += other_actions[i,:] * self.nA ** (self.n_cyclists - 2 - i)
             true_indexes = (self.nA ** (self.n_cyclists - 1) * np.arange(self.off_batch_size) + action_indexes).astype(int)
-            Qs = self.predict(state_actions)
             combined_probs = np.ones([(self.off_batch_size + 1),self.nA ** (self.n_cyclists - 1)])
             for i in range(self.n_cyclists - 1):
                 n_reps = self.nA ** (self.n_cyclists - 2 - i)
@@ -415,6 +468,9 @@ class Critic:
                 rep = np.repeat(other_probs[i,:,:], n_reps, axis = -1)
                 rep = np.tile(rep, (1,n_tiles))
                 combined_probs *= rep
+            where_significant = np.where(combined_probs.ravel() > self.significant_prob)
+            Qs = np.zeros([state_actions.shape[0],]) 
+            Qs[where_significant] = self.predict(state_actions[where_significant])      
             Vs = np.einsum('ij,ij->i',Qs.reshape([-1,self.nA ** (self.n_cyclists - 1)]), combined_probs)[1:]
             
             Q_labels = rewards + self.gamma * Vs
@@ -424,7 +480,8 @@ class Critic:
             Q_labels[loc_end] = 0
             # Q_labels[self.loc_end - 1] = rewards[self.loc_end - 1]
             self.model.train_on_batch(state_actions[true_indexes,:], Q_labels, sample_weight = weights)
-            Qs = self.predict(state_actions)  
+            Qs = np.zeros([state_actions.shape[0],]) 
+            Qs[where_significant] = self.predict(state_actions[where_significant])      
             Vs = np.einsum('ij,ij->i',Qs.reshape([-1,self.nA ** (self.n_cyclists - 1)]), combined_probs)[1:]
     
             reward_advantages = rewards + self.gamma * Vs - Qs[true_indexes]
@@ -446,7 +503,11 @@ class Critic:
             
         
     def update_dividor_subtractor(self, dividors, subtractors, actor): 
-
+        '''
+        Update the policy and value functions to account for a change in the
+        normalisation factors. Without this step, adjusting the normalisation
+        factors at the ends of episodes effectively changes the functions.
+        '''
         delta_dividors = dividors[1] / dividors[0]
         delta_dividors = np.append(delta_dividors, np.ones(self.nA * (self.n_cyclists - 1)))
         W = self.model.layers[0].weights[0] * delta_dividors[:,None]
@@ -459,10 +520,16 @@ class Critic:
         actor.policy[0] += (np.dot(delta_subs[:self.nx],actor.policy[1:]))
         
     def save_model(self, seed, number):
+        '''
+        Save the model to an hdf5 file.
+        '''
         self.reset_arrays()        
         self.model.save_weights('critic_weights_' + str(seed) + '_' + str(number) + '.h5')
 
     def load_model(self, seed, number):
+        '''
+        Load the model from an hdf5 file.
+        '''
         self.reset_arrays()        
         self.model.load_weights('critic_weights_' + str(seed) + '_' + str(number) + '.h5')
         

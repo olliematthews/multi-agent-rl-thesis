@@ -186,6 +186,7 @@ class Critic:
         self.lambda_profile_progress = 0
         self.counter = 0
         self.episode_counter = 0
+        self.significant_prob = hyper_params['significant_prob']
         
         np.random.seed(seed)
         self.vars = [hyper_params['std_init'] ** 2, 0]
@@ -380,7 +381,7 @@ class Critic:
             rep = np.tile(rep, (1,n_tiles))
             combined_probs *= rep
             
-        where_significant = np.where(combined_probs.ravel() > 0.01)
+        where_significant = np.where(combined_probs.ravel() > self.significant_prob)
         Qs = np.zeros([state_actions.shape[0],]) 
         Qs[where_significant] = self.predict(state_actions[where_significant])      
         Vs = np.einsum('ij,ij->i',Qs.reshape([-1,self.nA ** (self.n_cyclists - 1)]), combined_probs)[1:]

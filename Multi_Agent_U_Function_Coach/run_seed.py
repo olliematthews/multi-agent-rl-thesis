@@ -1,8 +1,7 @@
 # -*- coding: utf-8 -*-
 """
-Created on Thu Jan  9 10:02:51 2020
-
-@author: Ollie
+Contains the functions required to learn. run_seed is called externally, and 
+will utilise the other functions.
 """
 import numpy as np
 from environment import Environment
@@ -13,6 +12,10 @@ from time import sleep
 import copy
   
 def run_seed(seed_params):
+    '''
+    Run the actor critic algorithm with a U-function and with the coach frame-
+    work. The coordinator is effectively the coach, the simulator is a worker.
+    '''
     n_workers = 2
     
     simulator_pool = Pool(processes = n_workers)
@@ -55,6 +58,13 @@ def run_seed(seed_params):
      
     
 def coordinator(coordinator_args, best_workers, best_params):
+    '''
+    This is the 'coach'. It does all of the hyperparameter value optimising. 
+    It runs simulations in parallel with different hyperparameter values, and
+    measures the performance of each based on a maximum entropy performance 
+    hueristic. It cycles through each of the available hyperparameter values,
+    testing them one by one.
+    '''
     queue = coordinator_args['queue']
     pipes = coordinator_args['pipes']
     n_workers = coordinator_args['n_workers']
@@ -154,6 +164,13 @@ def coordinator(coordinator_args, best_workers, best_params):
 
     
 def simulator(seed_params):
+    '''
+    This is the simulator. It runs a certain number of episodes of learning,
+    and feeds back the performance to the coach. At the start of a simulation,
+    if it is a 'best' worker, it learns off the experiences of the other worker
+    and then saves the model. The 'searcher' then loads this model, and the two
+    restart in parallel. 
+    '''
     from networks import Actor, Critic, State_normaliser
 
     # Create gym and seed numpy
@@ -301,6 +318,8 @@ def simulator(seed_params):
             
         else:
             assert 1
+            
+        # Initiliase arrays for storing experiences
         
         probs_arrays = []
         action_arrays = []
@@ -320,10 +339,10 @@ def simulator(seed_params):
 
         np.random.seed(seed)
         random.seed(seed)
-        # Main loop 
         
         param_history.append([worker_number, model['acs'][0]['critic'].lambda_reward, model['acs'][0]['critic'].distance_penalty])
         
+        # Beginning of simulation ---------------------------------------------
         for local_episode in range(hyper_params['window_size']):
         	# Keep track of game score to print
             pose_inits = [np.round(np.random.randn() * sim_params['random_std'], 1) for i in range(sim_params['n_cyclists'])] if sim_params['random_init'] else [0] * sim_params['n_cyclists']
@@ -428,11 +447,10 @@ def simulator(seed_params):
                 print()
     #        sys.stdout.flush()
             episode += 1
+        # End of simulation----------------------------------------------------
         queue.put([worker_number, np.mean(episode_rewards[-hyper_params['window_size']:]), np.mean(episode_entropies[-hyper_params['window_size']:])])
                     
-    # for ac in model['acs']:
-    #     ac['critic'].clear()
-        
+    # End of all simulations---------------------------------------------------        
     Seed_entropies = np.array(episode_entropies)
     Seed_rewards = np.array(episode_rewards)
     Seed_velocities = np.array(episode_velocities)
