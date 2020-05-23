@@ -80,7 +80,6 @@ if __name__ == '__main__':
 
     for iterator in range(n_iterations):
         seed_params.append([])
-#        decay_episodes = hyper_params['decay_episodes'][iterator]
         labels.append(hyper_params['iterate_over'] + ' = ' + str(hyper_params[hyper_params['iterate_over']][iterator]))
         for seed in range(sim_params['n_seeds']):
             seed_params[iterator].append({
@@ -101,7 +100,6 @@ if __name__ == '__main__':
             output_stacked[iterator].append(output[sim_params['n_seeds'] * iterator + seed])
             
         
-#    Seed_rewards[seed,:], Seed_entropies[seed,:], Seed_explore[seed,:], model_best[seed] = run_seed(seed, seed_params)
     
     params = {'Env': env_params, 'Hyp' : hyper_params, 'Sim' : sim_params}
     pickle.dump([output_stacked,labels,params], open('acfull.p','wb'))

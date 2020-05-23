@@ -1,4 +1,4 @@
-# Single Agent, Reinforce
+# Multi Agent Complex, Actor Critic
 
 ## Environment
 
@@ -13,4 +13,4 @@ Note the environment is slightly different to the REINFORCE environment. This is
 
 ## Algorithm
 
-The algorithm is an implementation of the Actor Critic algorithm. We also implement entropy regularisation. 
+The algorithm is an implementation of the Actor Critic algorithm. We also implement entropy regularisation.

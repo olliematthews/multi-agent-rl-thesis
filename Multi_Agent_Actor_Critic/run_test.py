@@ -4,13 +4,11 @@ for debugging.
 """
 
 import numpy as np
-from multiprocessing import Pool
 import pickle
 from run_seed import run_seed
 import time
 import cProfile
 
-# model, _ = pickle.load(open('bm.p','rb'))
 
 # Simulation Parameters
 sim_params = {

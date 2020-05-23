@@ -80,30 +80,18 @@ def run_seed(seed_params):
         group_score = 0
         group_reward = 0
         step = 0
-        # if episode == 50:
-        #     print('YourNAN')
         while True:
             actions = []
-            # print(step)
             for state in states:
-                # print(state['state'])
+
                 cyclist_number = state['number']
-        		# Sample from policy and take action in environment
-                # if step == 96:
-                #     print('Stop')
+
                 probs, action, entropy = model['acs'][cyclist_number]['actor'].choose_action(state['state'])
                 step_entropies[cyclist_number].append(entropy)
-                # if state['state'][1] < 0:
-                #     action = 2
-                # else:
-                #     action = 1
                 actions.append(action)
                 
                 model['acs'][cyclist_number]['critic'].store_transition_1(state['state'], action, entropy, probs)
         
-            # print()
-            # print(actions)
-            # print([np.round(c.pose,1) for c in env.cyclists])
             next_states, rewards, done, info = env.step(actions)
             
             group_reward += sum(rewards) / sim_params['n_cyclists']
@@ -139,9 +127,6 @@ def run_seed(seed_params):
         if sim_params['print_rewards']:
             print(f'Seed: {seed}, EP: {episode}, Score: {np.round(scores)}',flush = True)
             print()
-#        sys.stdout.flush()
-    # for ac in model['acs']:
-    #     ac['critic'].clear()
     
     Seed_entropies = np.array(episode_entropies)
     Seed_rewards = np.array(episode_rewards)

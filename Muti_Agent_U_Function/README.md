@@ -1,4 +1,4 @@
-# Multi Agent, Actor Critic
+# Multi Agent, Actor Critic with U-Function
 
 ## Environment
 
@@ -10,4 +10,4 @@ This is the more simple multi-agent environment.
 
 ## Algorithm
 
-The algorithm is an implementation of the Actor Critic algorithm. We also implement entropy regularisation.
+The algorithm is an implementation of the Actor Critic algorithm. We also implement entropy regularisation. Instead of learning a single agent value function, we learn a multi-agent U-Function, which represents: $U(s,\bar{a}) = \mathbb{E}\left[\sum_t r_t \middle| s = s, \bar{a} = \bar{a}\right]$, where $\bar{a}$ represents the actions of all of the agents apart from one partiular agent. This deals with non-stationarity in the multi-agent environment.

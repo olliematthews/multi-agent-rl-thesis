@@ -1,9 +1,3 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Thu Jan  9 10:02:51 2020
-
-@author: Ollie
-"""
 import numpy as np
 from environment import Environment
 import pickle
@@ -11,6 +5,23 @@ import random
 
     
 def run_seed(seed_params):
+    '''
+    Runs a learning simulation for the seed in question.
+
+    Parameters
+    ----------
+    seed_params : dict
+
+    Returns
+    -------
+    Seed_rewards : np.array
+        Reward history for the seed.
+    Seed_entropies : np.array
+        Entropy history for the seed.
+    Loss_history : list
+        History of the losses of the critic's value function.
+
+    '''
     from networks import Actor, Critic, State_normaliser
 
     # Create gym and seed numpy
@@ -24,14 +35,10 @@ def run_seed(seed_params):
         
     
     seed = seed_params['seed']
-    # actions = [0] * sim_params['n_cyclists']
-#    entropy_kick = 0.4
     env = Environment(env_params, n_cyclists = sim_params['n_cyclists'])
-    # action_space = env.action_space
     np.random.seed(seed)
     random.seed(seed)
 
-    # nA = len(env.action_space)
     # Init weights
     if sim_params['weights'] == 'none':
         model = {'normaliser' : State_normaliser(env, hyper_params)}
@@ -41,8 +48,6 @@ def run_seed(seed_params):
             acs.append({
                 'actor' : Actor(env, hyper_params, np.random.randint(1000)),
                 'critic' : Critic(env, hyper_params, np.random.randint(1000))
-                # 'actor' : Actor(env, hyper_params, seed),
-                # 'critic' : Critic(env, hyper_params, seed)
                 })
         model.update({'acs' : acs})
     else:
@@ -90,9 +95,6 @@ def run_seed(seed_params):
             group_score = sum(rewards) / sim_params['n_cyclists']
             states = [model['normaliser'].normalise_state(state) for state in states]             
 
-            # if done:
-            #     print('HIII')
-            # Store results from last step, choose next action, store next actions, probs etc.
             for reward, score, state in zip(rewards, rewards, states):
                 cyclist_number = state['number']
                 scores[cyclist_number] += (1 - sim_params['lambda_group']) * score + group_score * sim_params['lambda_group']

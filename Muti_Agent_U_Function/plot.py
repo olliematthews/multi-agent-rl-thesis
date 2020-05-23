@@ -1,8 +1,5 @@
-# -*- coding: utf-8 -*-
 """
-Created on Sun Oct 20 17:14:28 2019
-
-@author: Ollie
+Functions for plotting the results of simulations.
 """
 import matplotlib.pyplot as plt
 import pickle
@@ -11,7 +8,17 @@ import numpy as np
 from matplotlib import gridspec
 
 
+sigma = 10
+
+plt.rcParams.update({'font.size': 11})
+plt.rcParams.update({'figure.autolayout': True})
+figure_size = (4,2.8)
+
+
 def parse_data(results):
+    '''
+    Parse the results file.
+    '''
     rewards = []
     entropies = []
     params = []
@@ -37,6 +44,9 @@ def parse_data(results):
     return rewards, entropies, params, velocities, distances
 
 def plot_episode(rewards, sigma):
+    '''
+    Plot the individual agent performances for a simulation.
+    '''
     for i in range(rewards.shape[0]):
         for j in range(rewards[i].shape[1]):
             plt.plot(gaussian_filter(rewards[i,:,j], sigma = sigma))
@@ -46,6 +56,9 @@ def plot_episode(rewards, sigma):
         plt.show()
 
 def plot_episodes(rewards, sigma,save = False, filename = '', title = ''):
+    '''
+    Will plot the individual seeds for a set of simulations.
+    '''
     for i in range(rewards.shape[0]):
         plt.plot(gaussian_filter(np.mean(rewards,axis = 2)[i,:], sigma = sigma), label = f'Seed {i}')
         
@@ -59,6 +72,10 @@ def plot_episodes(rewards, sigma,save = False, filename = '', title = ''):
     plt.show()
 
 def plot_iterations(rewards, labels, sigma, save = False, filename = ''):
+    '''
+    Main plotting function. Will plot average and std rewards for different 
+    iterations.
+    '''
     plt.figure(figsize = figure_size)
     ax = plt.gca()
     for i in range(len(rewards)):
@@ -77,6 +94,9 @@ def plot_iterations(rewards, labels, sigma, save = False, filename = ''):
     plt.show()
     
 def plot_max_min(rewards, labels, sigma, save = False, filename = ''):
+    '''
+    Like plot_iterations, but plots max and min instead of stds
+    '''
     plt.figure(figsize = figure_size)
     ax = plt.gca()
     for i in range(len(rewards)):
@@ -103,6 +123,9 @@ def plot_max_min(rewards, labels, sigma, save = False, filename = ''):
     
     
 def plot_entropy_rewards(reward,entropy,sigma, save = False, filename = ''):
+    '''
+    Used to plot stacked plots of reward and entropy.
+    '''
     # set height ratios for sublots
     gs = gridspec.GridSpec(2, 1, height_ratios=[1, 1]) 
     # the fisrt subplot
@@ -126,48 +149,42 @@ def plot_entropy_rewards(reward,entropy,sigma, save = False, filename = ''):
         plt.savefig(filename)
     plt.show()
     
+def join_compare(files, nums):
+    '''
+    Can be used to join the results of two different sets of simulations.
 
-sigma = 10
+    Parameters
+    ----------
+    files : list
+        The p files to be joined.
+    nums : list
+        The iteration number in each p file to be taken.
 
-plt.rcParams.update({'font.size': 11})
-plt.rcParams.update({'figure.autolayout': True})
-figure_size = (4,2.8)
+    Returns
+    -------
+    data : list
+        A combined data file which can be fed into plot_iterations.
+
+    '''
+    data = []
+    for file, num in zip(files, nums):
+        data_, _, _ = pickle.load(open(file,'rb'))
+        data.append(data_[num])
+    return data
 
 
-
-
-#_,_, _, Seed_rewards, _, _, _ =     pickle.load(open('BigTest.p','rb'))
-# files = ['No_Normaliser_No_Coach.p', 'No_Normaliser.p', 'No_Normaliser_Std.p',  'No_Normaliser_No_Coach_Std.p']
-# labels = ['No Coach', 'Coach', 'Coach STD', 'No Coach STD']
 
 
 rewards = []
 entropies = []
 exploration = []
 model_best = []
-data, labels, params = pickle.load(open('Final_Exp.p','rb'))
-labels = ['No Explore', 'Explore']
-# labels = ['Exploration = ' + str(label) for label in labels]
+data, labels, params = pickle.load(open('acfull.p','rb'))
 for i in range(len(data)):
     r, e, l, v, d = parse_data(data[i])
-    # To deal with error in saving
-    # r = r[:,4:]
-    # e = [a[4:] for a in e]
     rewards.append(r)
     entropies.append(e)
-    # model_best.append(m)
-    # plot_episode(r, sigma)
     plot_episodes(r,sigma)
 
-# for i in range(len(entropies)):
-#     plt.plot(entropies[i][0], label = labels[i])
-# plt.legend()
-# plt.show()
-# plot_max_min(rewards, labels, sigma, True, 'no_norm_learning.png')
-    ##
-
-#plot_episodes(rewards, sigma)
-#rewards.append(np.squeeze(Seed_rewards[:10] * 4))
-#labels = ['Multiple agents learning the same policy', 'Single agents learning a policy']
 plot_iterations(rewards,labels,sigma, False, 'Optimal_Comparison.png')
 
