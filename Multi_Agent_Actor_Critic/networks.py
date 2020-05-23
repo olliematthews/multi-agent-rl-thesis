@@ -127,9 +127,9 @@ class Actor:
         '''
         Get the probability of taking each action
         '''
-    	z = state.dot(self.policy)
-    	exp = np.exp(z - np.max(z))
-    	return (exp/np.sum(exp))
+        z = state.dot(self.policy)
+        exp = np.exp(z - np.max(z))
+        return (exp/np.sum(exp))
         
     def choose_action(self, state):
         '''
