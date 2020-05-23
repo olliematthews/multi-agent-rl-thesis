@@ -100,6 +100,28 @@ def plot_entropy_rewards(reward,entropy,sigma, save = False, filename = ''):
         plt.savefig(filename)
     plt.show()
     
+def join_compare(files, nums):
+    '''
+    Can be used to join the results of two different sets of simulations.
+
+    Parameters
+    ----------
+    files : list
+        The p files to be joined.
+    nums : list
+        The iteration number in each p file to be taken.
+
+    Returns
+    -------
+    data : list
+        A combined data file which can be fed into plot_iterations.
+
+    '''
+    data = []
+    for file, num in zip(files, nums):
+        data_, _, _ = pickle.load(open(file,'rb'))
+        data.append(data_[num])
+    return data
 
 sigma = 1
 
@@ -118,4 +140,4 @@ for i in range(len(data)):
     entropies.append(e)
     model_best.append(m)
 
-plot_iterations(rewards, labels, sigma]
+plot_iterations(rewards, labels, sigma)

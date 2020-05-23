@@ -1,8 +1,6 @@
-# -*- coding: utf-8 -*-
 """
-Created on Sat Nov 30 10:28:33 2019
-
-@author: Ollie
+Same as 'run', but just runs a single episode with no multi-processing. Used
+for debugging.
 """
 
 import numpy as np
@@ -93,5 +91,3 @@ if __name__ == '__main__':
     # cProfile.run('re.compile("run_seed(flat_params[0])")','restats')
     Seed_rewards, Seed_entropies, seed_params, Seed_velocities, Seed_distances, final_model = run_seed(flat_params[0])
     pickle.dump([final_model, seed_params],open('bm.p','wb'))
-    # pickle.dump([Seed_velocities, Seed_distances], open('vd___.p','wb'))
-    # pickle.dump(Seed_rewards, open('rewards___.p', 'wb'))

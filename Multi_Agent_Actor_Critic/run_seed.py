@@ -10,6 +10,23 @@ import pickle
 import random
 
 def run_seed(seed_params):
+    '''
+    Runs a learning simulation for the seed in question.
+
+    Parameters
+    ----------
+    seed_params : dict
+
+    Returns
+    -------
+    Seed_rewards : np.array
+        Reward history for the seed.
+    Seed_entropies : np.array
+        Entropy history for the seed.
+    Loss_history : list
+        History of the losses of the critic's value function.
+
+    '''
     from networks import Actor, Critic, State_normaliser
 
     # Create gym and seed numpy

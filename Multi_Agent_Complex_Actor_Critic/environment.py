@@ -63,7 +63,7 @@ class Cyclist:
         
     def get_state(self, time):
         '''
-        Returns a list describing the cyclist's state
+        Returns an array describing the cyclist's state
         Parameters
         ----------
         time : int
@@ -165,11 +165,11 @@ class Environment:
     
     def step(self, action):
         '''
-        Steps the cyclist forward in an episode
+        Steps the cyclists forward in an episode.
 
         Parameters
         ----------
-        action : int
+        action : list
             The set of actions taken by each agent.
 
         Returns
@@ -255,8 +255,8 @@ class Environment:
 
         Returns
         -------
-        TYPE
-            DESCRIPTION.
+        cD
+            The coefficient of drag.
 
         '''
         # cD is modelled for now on the function ax/be^x

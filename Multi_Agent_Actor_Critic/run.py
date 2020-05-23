@@ -1,8 +1,7 @@
-# -*- coding: utf-8 -*-
 """
-Created on Sat Nov 30 10:28:33 2019
-
-@author: Ollie
+Runs learning in a number of independent processes. By setting 'iterate over',
+you can test different hyperparameter values. Saves the results in a p file
+which can be visualised with the plot functions.
 """
 
 import numpy as np
