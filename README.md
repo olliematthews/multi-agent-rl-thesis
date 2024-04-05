@@ -1,30 +1,27 @@
-# Codebase for Master's Project on Multi-Agent Reinforcement Learning
+# Multi-Agent Reinforcement Learning with a Coach
+
+This is my dissertation project (done in 2020), for which the aim was to investigate techniques for cooperative multi-agent reinforcement learning in a simple problem setting.
+
+The code on this branch is the final approach settled on. Some of the other approaches tested are on the `all-approaches` branch.
+
+## Installation
+
+The project can be setup with poetry, but running `poetry install`. You are advised to do this starting from a new virtual environment, with only `poetry` installed. 
+
+The main entrypoint for the code is in `src/main.py`.
+
+
 
 ## Environment
 
-The environment is meant to simulate cyclists in a race. The aim is to travel as far as possible. In a multi-agent case, this requires collaborative policies where the agents cycle close together.
+The environment simulates cyclists in a 1d race. The aim is to travel as far as possible in a set number of time steps. Agents have finite energy, and can conserve energy by cycling as close to possible to the rider in front (simulating a slip-streaming effect).
 
-## Notes
-
-This is the final approach settled on. Some of the other approaches tested are on the `all-approaches` branch.
-
-
-### Requirements
-* Tensorflow < 2
-* Keras (code written for version 2.3.1)
-* Code written for Cuda 10.1
-
-
-
-# Multi Agent, Actor Critic with U-Function and Hyperparameter Tuning
-
-## Environment
-
-This is the more simple multi-agent environment.
 * The cyclist's state is defined by a pose, velocity, energy and time, as well as the relative poses, velocities and the total energy of the other cyclists.
-* The episode ends **any one** of the cyclists run out of energy or the time runs out.
+* The episode ends **any one** of the cyclists runs out of energy **or** the time runs out.
 * The reward is the distance travelled in a step i.e. the cyclist's velocity.
 * The cyclist's energy decreases proportionally to $v^3$, multiplied by $c_D$ which depends on the proximity to the rider in front.
+
+
 
 ## Algorithm
 
