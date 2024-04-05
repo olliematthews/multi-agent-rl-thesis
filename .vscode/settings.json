@@ -1,0 +1,8 @@
+{
+    "python.pythonPath": "c:\\Users\\Ollie\\multi-agent-rl-thesis\\venv\\Scripts\\python.exe",
+    "[python]": {
+        "editor.defaultFormatter": "ms-python.black-formatter",
+        "editor.formatOnSave": true,
+        "files.trimTrailingWhitespace": true,
+      }
+}
