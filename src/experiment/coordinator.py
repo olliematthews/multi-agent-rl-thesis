@@ -46,7 +46,7 @@ def coordinator(coordinator_args, best_workers, best_params):
 
     search_count = 0
 
-    while 1:
+    while True:
         eps += coordinator_args["hyper_params"]["window_size"]
         power = 0.5 * (
             1

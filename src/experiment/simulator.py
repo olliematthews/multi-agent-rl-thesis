@@ -70,7 +70,7 @@ def simulator(seed_params):
     reward_arrays = [[], []]
     distance_arrays = [[], []]
     loc_end_array = []
-    while 1:
+    while True:
 
         response = pipe.recv()
         print("Response Recieved! Response was " + str(response))
@@ -169,9 +169,6 @@ def simulator(seed_params):
             worker_pipe.send("Model Saved!")
 
             print("First model starting")
-
-        else:
-            assert 1
 
         # Initiliase arrays for storing experiences
 
