@@ -1,12 +1,17 @@
-import numpy as np
-import tensorflow as tf
+"""The actor model"""
+
 import pickle
 
-tf.compat.v1.logging.set_verbosity(tf.compat.v1.logging.ERROR)
+import numpy as np
 import random
 
 
 class Actor:
+    """The actor in the simulation.
+
+    The policy is modelled as a softmax regression.
+    """
+
     def __init__(self, environment, hyper_params, seed):
         self.lr = hyper_params["lr_actor"]
         self.nx = environment.state_space

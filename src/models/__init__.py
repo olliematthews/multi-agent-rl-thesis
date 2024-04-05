@@ -1,13 +1,10 @@
 import tensorflow as tf
+
 from .actor import Actor
 from .critic import Critic
 from .state_normaliser import StateNormaliser
 
-__all__ = [
-    "Actor",
-    "Critic",
-    "StateNormaliser"
-]
+__all__ = ["Actor", "Critic", "StateNormaliser"]
 
 # Restrict TensorFlow to only allocate 1GB of memory on the first GPU
 gpus = tf.config.experimental.list_physical_devices("GPU")

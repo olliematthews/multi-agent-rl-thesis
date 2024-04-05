@@ -4,12 +4,11 @@ The equivalent of run. Will run episodes, but not in parallel (since the coach
 framework itself uses multiprocessing).
 """
 
-import numpy as np
-from multiprocessing import Pool
 import pickle
-from run_seed import run_seed
-import time
-import cProfile
+
+import numpy as np
+
+from experiment import run_experiment
 
 # model, _ = pickle.load(open('bm.p','rb'))
 
@@ -43,12 +42,12 @@ Notable hyperparameters:
     param_changes - base change to implement for that hyperparameter
     window_size - the size number of episodes run in a simulation to test
         hyperparameter values
-    max_goes - the max number of times you can try a parameter before moving 
+    max_goes - the max number of times you can try a parameter before moving
         onto another. max_goes = 0 => you only test each parameter once
     off_batch_size - the batch size for off-policy gradient updates
-    significant prob - reduces computational complexity at the expense of 
+    significant prob - reduces computational complexity at the expense of
         accuracy in the value function. Only actions who's probability >
-        significant_prob will be fed through the value function when taking an 
+        significant_prob will be fed through the value function when taking an
         expectation over actions.
 """
 hyper_params = {
@@ -107,10 +106,10 @@ if __name__ == "__main__":
             )
     # Flatten list to input it into multiprocessing, then restack it
     flat_params = [item for sublist in seed_params for item in sublist]
-    # cProfile.run('re.compile("run_seed(flat_params[0])")','restats')
+    # cProfile.run('re.compile("run_experiment(flat_params[0])")','restats')
     output = []
     params = {"sim": sim_params, "hyp": hyper_params, "env": env_params}
     for i in range(sim_params["n_seeds"]):
-        output.append(run_seed(flat_params[i]))
+        output.append(run_experiment(flat_params[i]))
         # Save after each episode
         pickle.dump([output, params], open("no_off_4.p", "wb"))

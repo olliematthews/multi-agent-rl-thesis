@@ -1,8 +1,16 @@
-import numpy as np
+"The state normaliser model"
+
 import pickle
+
+import numpy as np
 
 
 class StateNormaliser:
+    """The state normaliser model.
+
+    This is used to normalise states before feeding them into each model.
+    """
+
     def __init__(self, env, hyper_params):
         self.nx = env.state_space
         self.state_subtractor = [

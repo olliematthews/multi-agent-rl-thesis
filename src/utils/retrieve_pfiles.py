@@ -3,8 +3,9 @@ This code will retrieve pickle files from a remote directory. The remote
 directory is at 'remote_path/' + <your current directory name>.
 """
 
-import paramiko
 import os
+
+import paramiko
 
 # Set your username, the host name, your password, and the path to the
 # remote directory which contains the directory with the pickle files.

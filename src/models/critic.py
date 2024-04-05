@@ -1,17 +1,25 @@
-import numpy as np
+"""The critic model"""
+
+import gc
+import pickle
+
 import keras.backend as K
+import numpy as np
 import tensorflow as tf
+from keras.initializers import glorot_normal
 from keras.layers import Dense
+from keras.losses import mean_squared_error
 from keras.models import Sequential
 from keras.optimizers import Adam
-from keras.initializers import glorot_normal
-from keras.losses import mean_squared_error
-import pickle
 from numba import cuda
-import gc
 
 
 class Critic:
+    """The critic model.
+
+    The critic is a fully connected neural network with a single output (the value).
+    """
+
     def __init__(self, environment, hyper_params, seed):
 
         def get_entropy(probs):
@@ -104,8 +112,8 @@ class Critic:
         Store transtions involving dead states.
         """
         self.state_memory[self.counter] = dead_state
-        actions = dead_actions.pop(index)
-        probs = dead_probs.pop(index)
+        dead_actions.pop(index)
+        dead_probs.pop(index)
         other_actions = dead_actions
         other_probs = dead_probs
         for i in range(self.n_cyclists - 1):
@@ -116,7 +124,8 @@ class Critic:
         self.prob_memory[self.counter, :] = 1
         self.counter += 1
         if self.counter >= self.batch_size:
-            # Does not matter what the next states are. The label will be zero anyways and there will be no advantage.
+            # Does not matter what the next states are. The label will be zero anyways
+            # and there will be no advantage.
             self.learn(actor, episode_counter)
 
     def store_transition_1(self, state, entropy):
@@ -348,7 +357,6 @@ class Critic:
         in_states = np.append(
             np.ones([states_buffer.shape[0], 1]), states_buffer, axis=1
         )
-        # weights_buffer = actor.predict(in_states)[np.arange(actions_buffer.size), actions_buffer] / probs_buffer[np.arange(actions_buffer.size), actions_buffer]
         counter = 0
         while counter + self.off_batch_size < n_tuples - 1:
             loc_end = (

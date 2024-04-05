@@ -2,12 +2,12 @@
 Functions for plotting the results of simulations.
 """
 
-import matplotlib.pyplot as plt
 import pickle
-from scipy.ndimage import gaussian_filter, minimum_filter1d, maximum_filter1d
+
+import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib import gridspec
-
+from scipy.ndimage import gaussian_filter, maximum_filter1d, minimum_filter1d
 
 sigma = 10
 
@@ -25,7 +25,6 @@ def parse_data(results):
     params = []
     velocities = []
     distances = []
-    models = []
 
     for i in range(len(results)):
         rewards.append(results[i][0])
@@ -124,8 +123,6 @@ def plot_max_min(rewards, labels, sigma, save=False, filename=""):
         rewards_max = maximum_filter1d(rewards_max, sigma)
         plt.plot(rewards_mean, color=color, label=labels[i])
         plt.fill_between(range(rewards_mean.size), rewards_min, rewards_max, alpha=0.3)
-        # plt.plot(gaussian_filter(rewards_min, 100), color = color, linestyle = 'dashed')
-        # plt.plot(gaussian_filter(rewards_max, 100), color = color, linestyle = 'dashed')
     plt.xlabel("Episodes")
     plt.ylabel("Rewards")
     plt.legend()
@@ -186,40 +183,37 @@ def join_compare(files, nums):
     return data
 
 
-sigma = 10
+if __name__ == "__main__":
+    sigma = 10
 
-plt.rcParams.update({"font.size": 11})
-plt.rcParams.update({"figure.autolayout": True})
-figure_size = (4, 2.8)
+    plt.rcParams.update({"font.size": 11})
+    plt.rcParams.update({"figure.autolayout": True})
+    figure_size = (4, 2.8)
 
+    rewards = []
+    entropies = []
+    exploration = []
+    model_best = []
 
-rewards = []
-entropies = []
-exploration = []
-model_best = []
+    data = []
+    for i in range(5):
+        data_, params = pickle.load(open("no_off_" + str(i) + ".p", "rb"))
+        data.extend(data_)
 
-data = []
-for i in range(5):
-    data_, params = pickle.load(open("no_off_" + str(i) + ".p", "rb"))
-    data.extend(data_)
+    pickle.dump([data, params], open("auto_multiple.p", "wb"))
+    # data, params = pickle.load(open('cont_four.p','rb'))
+    labels = ["No Explore", "Explore"]
 
-pickle.dump([data, params], open("auto_multiple.p", "wb"))
-# data, params = pickle.load(open('cont_four.p','rb'))
-labels = ["No Explore", "Explore"]
+    windows_size = params["hyp"]["window_size"]
+    n_episodes = int(params["sim"]["n_episodes"])
 
-windows_size = params["hyp"]["window_size"]
-n_episodes = int(params["sim"]["n_episodes"])
+    rewards = []
+    for seed in range(len(data)):
+        boi = []
+        best_workers = np.array(data[seed][1]).repeat(windows_size)
+        for i in range(n_episodes):
+            boi.append(data[seed][0][best_workers[i]][0][i])
+        boi = np.array(boi)
+        rewards.append(boi)
 
-
-rewards = []
-for seed in range(len(data)):
-    boi = []
-    best_workers = np.array(data[seed][1]).repeat(windows_size)
-    for i in range(n_episodes):
-        boi.append(data[seed][0][best_workers[i]][0][i])
-    boi = np.array(boi)
-    rewards.append(boi)
-    # plt.plot(data[seed][2])
-    # plt.show()
-
-plot_iterations([rewards], labels, sigma, False, "Optimal_Comparison.png")
+    plot_iterations([rewards], labels, sigma, False, "Optimal_Comparison.png")

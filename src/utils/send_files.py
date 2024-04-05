@@ -3,9 +3,9 @@ This script will send all the files in the current directory to a directory
 at 'remote_path/' + <your current directory name>.
 """
 
-import paramiko
-import sys
 import os
+
+import paramiko
 
 # Set your username, the host name, your password, and the path to the
 # remote directory which contains the directory with the pickle files.
