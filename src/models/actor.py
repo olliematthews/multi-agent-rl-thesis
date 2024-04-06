@@ -1,9 +1,9 @@
 """The actor model"""
 
 import pickle
+import random
 
 import numpy as np
-import random
 
 
 class Actor:

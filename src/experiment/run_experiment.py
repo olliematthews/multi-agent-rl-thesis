@@ -1,7 +1,7 @@
 from multiprocessing import Manager, Pipe, Pool, Process
 
-from .coordinator import coordinator
-from .simulator import simulator
+from .coordinator import run_coordinator
+from .simulator import run_simulator
 
 
 def run_experiment(seed_params):
@@ -49,9 +49,9 @@ def run_experiment(seed_params):
     }
 
     coordinator_process = Process(
-        target=coordinator, args=(coordinator_args, best_workers, best_params)
+        target=run_coordinator, args=(coordinator_args, best_workers, best_params)
     )
     coordinator_process.start()
-    output = simulator_pool.map(simulator, pool_params)
+    output = simulator_pool.map(run_simulator, pool_params)
     coordinator_process.join()
     return [output, list(best_workers), list(best_params), list(param_history)]

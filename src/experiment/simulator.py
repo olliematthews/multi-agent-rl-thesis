@@ -5,7 +5,7 @@ import numpy as np
 from environment import Environment
 
 
-def simulator(seed_params):
+def run_simulator(seed_params):
     """
     This is the simulator. It runs a certain number of episodes of learning,
     and feeds back the performance to the coach. At the start of a simulation,
@@ -92,25 +92,14 @@ def simulator(seed_params):
             for i in range(len(arrays)):
                 arrays[i] = np.array(arrays[i])
 
-            # print('Before learn:')
-            # print(model['acs'][0]['critic'].model.layers[2].get_weights())
-            # print(model['acs'][0]['actor'].policy[2])
-
             # Learn from the tuples
             print("Data Received - Normalising States")
-            # for boi in arrays[3]:
-            #     print('hi')
-            #     print(type(boi))
-            #     model['normaliser'].normalise_batch(boi)
+
             arrays[3] = [model["normaliser"].normalise_batch(x) for x in arrays[3]]
 
             print("Learning from states")
             for index, ac in enumerate(model["acs"]):
                 ac["critic"].learn_off_policy(index, arrays, ac["actor"])
-
-            # print('After learn:')
-            # print(model['acs'][0]['critic'].model.layers[2].get_weights())
-            # print(model['acs'][0]['actor'].policy[2])
 
             # Save your model
             print("Saving Model")

@@ -1,5 +1,5 @@
 """
-This code will retrieve pickle files from a remote directory. The remote 
+This code will retrieve pickle files from a remote directory. The remote
 directory is at 'remote_path/' + <your current directory name>.
 """
 
