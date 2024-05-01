@@ -68,7 +68,7 @@ An episode ends either when:
 ## Algorithm
 
 
-The algorithm is an implementation of the Actor Critic algorithm with a 'supervisor' framework for dynamically optimising the reward function. 
+The algorithm is an implementation of the Actor Critic algorithm with a Coach framework for dynamically optimising the reward function. 
 
 Each agent learns its own policy and value function over the course of a number of episodes.
 
@@ -80,7 +80,7 @@ where ![equation](https://latex.codecogs.com/gif.latex?\bar{a}) represents the a
 
 ### The Coach
 
-The coach oversees learning and tries to optimise hyperparameters. In this case there are two hyperparameters:
+The coach (also refered to as a supervisor) oversees learning and tries to optimise hyperparameters. In this case there are two hyperparameters:
 
 * The exploitation parameter
 * The distance penalty, which adds a penalty to the reward function when cyclists are far apart
