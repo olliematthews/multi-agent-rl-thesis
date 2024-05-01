@@ -1,4 +1,4 @@
-# Multi-Agent Reinforcement Learning with a Supervisor
+# Multi-Agent Reinforcement Learning with a Coach
 
 This is my dissertation project (done in 2020), for which the aim was to investigate techniques for cooperative multi-agent reinforcement learning in a simple problem setting.
 
