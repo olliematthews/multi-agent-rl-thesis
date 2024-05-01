@@ -1,4 +1,4 @@
-# Multi-Agent Reinforcement Learning with a Coach
+# Multi-Agent Reinforcement Learning with a Supervisor
 
 This is my dissertation project (done in 2020), for which the aim was to investigate techniques for cooperative multi-agent reinforcement learning in a simple problem setting.
 
@@ -68,7 +68,7 @@ An episode ends either when:
 ## Algorithm
 
 
-The algorithm is an implementation of the Actor Critic algorithm with a 'coach' framework for optimising learning hyperparameters. We also implement entropy regularisation to encourage exploration. 
+The algorithm is an implementation of the Actor Critic algorithm with a 'supervisor' framework for dynamically optimising the reward function. 
 
 Each agent learns its own policy and value function over the course of a number of episodes.
 
